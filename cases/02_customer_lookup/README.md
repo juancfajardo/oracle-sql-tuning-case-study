@@ -10,7 +10,7 @@
 **Fix:**
 
 1. Bind `customer_code` as a string in the application (no SQL change).
-2. Add an index on `orders (customer_id, order_date)`. Oracle reads the index backwards and stops after 20 rows (`FETCH FIRST`), with no sort.
+2. Add an index on `orders (customer_id, order_date, order_id)`. Oracle finds the customer through the unique index, then reads only that customer's orders through the new index and sorts a handful of rows instead of the whole table. In the measured plan, the lookup reads 24 blocks instead of 11,014 (see `results/plans/case2_after.txt`).
 
 Files:
 
