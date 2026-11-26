@@ -1,6 +1,6 @@
 # Case 3: Bulk price upload
 
-**Symptom:** uploading a price file takes minutes. When a user retries an upload that "seems stuck", the price list can end up with **duplicate prices** for the same product and date.
+**Symptom:** uploading a 20,000-line price file takes well over a minute. When a user retries an upload that "seems stuck", the price list can end up with **duplicate prices** for the same product and date.
 
 **Root cause:**
 
