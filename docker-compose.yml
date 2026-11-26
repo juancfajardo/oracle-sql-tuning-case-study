@@ -1,0 +1,23 @@
+# Oracle Database 23ai Free in a container (community image by Gerald Venzl).
+# Start:  docker compose up -d      (first start takes 1-2 minutes; wait for "DATABASE IS READY TO USE!")
+# Logs:   docker compose logs -f oracle
+# Stop:   docker compose down        (add -v to also delete the data volume)
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim-faststart
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: ChangeMe_123     # SYS and SYSTEM password, local demo only
+      APP_USER: demo
+      APP_USER_PASSWORD: demo
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  oracle-data:
