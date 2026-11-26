@@ -8,7 +8,7 @@ Three common performance problems in production Oracle systems, each one reprodu
 |---|---|---|---|
 | 1 | [Monthly report gets slower every month](cases/01_monthly_report) | Function on an indexed column (`TO_CHAR(order_date)`) forces a full table scan | Date-range predicate + covering index |
 | 2 | [API lookup is slow on every call](cases/02_customer_lookup) | Code bound as a number against a `VARCHAR2` column (implicit `TO_NUMBER`) + unindexed foreign key | Bind as string + `(customer_id, order_date)` index with `FETCH FIRST` stopkey |
-| 3 | [Bulk upload takes minutes and creates duplicates on retry](cases/03_bulk_price_upload) | Row-by-row PL/SQL, commit per row, no key | One set-based `MERGE` + primary key + serialized loads |
+| 3 | [Bulk upload takes minutes and can create duplicates on retry](cases/03_bulk_price_upload) | Row-by-row PL/SQL, commit per row, no key | One set-based `MERGE` + primary key + serialized loads |
 
 ## Results
 
@@ -31,6 +31,8 @@ How to read them:
 
 Requirements: Docker (or Podman) and Python 3.10+.
 
+One command: `bash scripts/run.sh` (Linux/macOS) or `powershell -ExecutionPolicy Bypass -File scripts\run.ps1` (Windows). Or step by step:
+
 ```bash
 docker compose up -d                       # Oracle Database 23ai Free; wait until it is healthy
 pip install -r bench/requirements.txt
@@ -46,6 +48,7 @@ Options: `--quick` uses a small data set for a fast smoke test, `--only 1` runs 
 sql/          schema and synthetic data generator (reproducible, no real data)
 cases/        one folder per case: README, before, fix, after, reset
 bench/        benchmark harness (python-oracledb, thin mode) and chart generator
+scripts/      one-shot run scripts for Windows and Linux/macOS
 results/      summary.json, RESULTS.md, execution plans, chart
 docs/         cover image
 ```
