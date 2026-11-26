@@ -1,18 +1,39 @@
 # Oracle SQL Tuning Case Study
 
+[![Benchmark](https://github.com/juancfajardo/oracle-sql-tuning-case-study/actions/workflows/benchmark.yml/badge.svg)](https://github.com/juancfajardo/oracle-sql-tuning-case-study/actions/workflows/benchmark.yml)
+
 Three common performance problems in production Oracle systems, each one reproduced, fixed and **measured before and after on the same data**, with proof that the result did not change.
 
-> **Status:** code, cases and benchmark harness are complete. The measured results (chart, table and execution plans) will be published here after the benchmark run on Oracle Database 23ai Free. No numbers are shown until they are measured.
+![Before and after](results/before_after.png)
 
 | # | Problem | Root cause | Fix |
 |---|---|---|---|
 | 1 | [Monthly report gets slower every month](cases/01_monthly_report) | Function on an indexed column (`TO_CHAR(order_date)`) forces a full table scan | Date-range predicate + covering index |
-| 2 | [API lookup is slow on every call](cases/02_customer_lookup) | Code bound as a number against a `VARCHAR2` column (implicit `TO_NUMBER`) + unindexed foreign key | Bind as string + `(customer_id, order_date)` index with `FETCH FIRST` stopkey |
-| 3 | [Bulk upload takes minutes and can create duplicates on retry](cases/03_bulk_price_upload) | Row-by-row PL/SQL, commit per row, no key | One set-based `MERGE` + primary key + serialized loads |
+| 2 | [API lookup is slow on every call](cases/02_customer_lookup) | Code bound as a number against a `VARCHAR2` column (implicit `TO_NUMBER`) + unindexed foreign key | Bind as string + index on `(customer_id, order_date)` |
+| 3 | [Bulk upload takes over a minute and can create duplicates on retry](cases/03_bulk_price_upload) | Row-by-row PL/SQL, commit per row, no key | One set-based `MERGE` + primary key + serialized loads |
 
 ## Results
 
-*Pending benchmark run.* When it is done, the full numbers, execution plans and environment will be in `results/RESULTS.md` and `results/plans/`. Every chart and number is generated from `results/summary.json` by the scripts in `bench/`; nothing is typed by hand.
+Measured by the [benchmark workflow](.github/workflows/benchmark.yml) on GitHub Actions, against Oracle AI Database 26ai Free in a container. Full numbers in [results/summary.json](results/summary.json), execution plans in [results/plans/](results/plans).
+
+| Case | Before | After | Speed-up | Logical reads (before -> after) | Same result |
+|---|---:|---:|---:|---:|:---:|
+| Monthly sales report (per report) | 286 ms | 25 ms | 12x | 11,014 -> 937 | yes |
+| Customer order lookup (API call) (per lookup) | 78 ms | 0.31 ms | 254x | 11,014 -> 27 | yes |
+| Bulk price upload (per file) | 1 min 26 s | 91 ms | 940x | 32,913,638 -> 38,556 | yes |
+
+Double submission test (two sessions load the same file at the same time):
+
+| Version | Duplicate product/date keys | Rows in price list |
+|---|---:|---:|
+| Before | 7 | 209,095 |
+| After | 0 | 209,088 |
+
+A race condition is not deterministic: the number of duplicates in the old version changes from run to run. What matters is that it is not zero, and that the new version cannot produce any.
+
+Environment: Oracle AI Database 26ai Free Release 23.26.4.0.0; python-oracledb 26.2.0 (thin), Python 3.12.16; GitHub Actions ubuntu-latest runner, Oracle Database Free in a service container.
+Data: 100,000 customers, 2,000,000 orders, 200,000 prices, 20,000-line upload file.
+Method: median of repeated runs after one warm-up run (warm buffer cache); logical reads from V$MYSTAT 'session logical reads'. Generated 2026-11-26T06:51:31+00:00.
 
 How to read them:
 
@@ -34,13 +55,13 @@ Requirements: Docker (or Podman) and Python 3.10+.
 One command: `bash scripts/run.sh` (Linux/macOS) or `powershell -ExecutionPolicy Bypass -File scripts\run.ps1` (Windows). Or step by step:
 
 ```bash
-docker compose up -d                       # Oracle Database 23ai Free; wait until it is healthy
+docker compose up -d                       # Oracle Database Free; wait until it is healthy
 pip install -r bench/requirements.txt
 python bench/bench.py --setup --system-password ChangeMe_123   # creates schema + loads data, then benchmarks
 python bench/charts.py                     # regenerates the chart, the table and the cover image
 ```
 
-Options: `--quick` uses a small data set for a fast smoke test, `--only 1` runs a single case, `--dsn host:port/service` points to another Oracle Database 23ai instance (the scripts use 23ai syntax such as `DROP ... IF EXISTS`).
+Options: `--quick` uses a small data set for a fast smoke test, `--only 1` runs a single case, `--dsn host:port/service` points to another Oracle Database 23ai or 26ai instance (the scripts use syntax such as `DROP ... IF EXISTS`, available since 23ai).
 
 ## Repository layout
 

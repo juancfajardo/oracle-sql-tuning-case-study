@@ -1,4 +1,4 @@
-# Oracle Database 23ai Free in a container (community image by Gerald Venzl).
+# Oracle Database Free (23ai / 26ai) in a container (community image by Gerald Venzl).
 # Start:  docker compose up -d      (first start takes 1-2 minutes; wait for "DATABASE IS READY TO USE!")
 # Logs:   docker compose logs -f oracle
 # Stop:   docker compose down        (add -v to also delete the data volume)
