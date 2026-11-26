@@ -11,6 +11,7 @@ on:
       - "cases/**"
       - "bench/**"
       - ".github/workflows/benchmark.yml"
+      - "!**/*.md"
 
 permissions:
   contents: write
