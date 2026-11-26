@@ -235,11 +235,11 @@ def case2(conn, stats: Stats, cfg: dict, reps: int) -> dict:
 def price_list_state(conn) -> dict:
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT COUNT(*),
-                   SUM(price),
+            SELECT (SELECT COUNT(*) FROM price_list),
+                   (SELECT SUM(price) FROM price_list),
                    (SELECT COUNT(*) FROM (SELECT sku, valid_from FROM price_list
                                           GROUP BY sku, valid_from HAVING COUNT(*) > 1))
-            FROM price_list""")
+            FROM dual""")
         rows, total, dup_keys = cur.fetchone()
         return {"rows": int(rows), "price_sum": float(total), "duplicate_keys": int(dup_keys)}
 
