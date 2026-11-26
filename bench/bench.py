@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import re
 import statistics
@@ -376,7 +377,7 @@ def main() -> int:
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "database": db_version,
         "client": f"python-oracledb {oracledb.__version__} (thin), Python {platform.python_version()}",
-        "machine": platform.platform(),
+        "machine": os.environ.get("BENCH_ENV") or platform.platform(),
         "data": {k: cfg[k] for k in ("n_customers", "n_orders", "n_skus", "n_stg")},
         "method": "median of repeated runs after one warm-up run (warm buffer cache); "
                   "logical reads from V$MYSTAT 'session logical reads'",
