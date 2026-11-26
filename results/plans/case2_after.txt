@@ -1,0 +1,32 @@
+SQL_ID  38873v41s5sph, child number 0
+-------------------------------------
+SELECT /*+ gather_plan_statistics */ /* tag:case2 */        o.order_id, 
+       o.order_date,        o.status,        o.total_amount FROM 
+customers c JOIN orders o ON o.customer_id = c.customer_id WHERE 
+c.customer_code = :customer_code ORDER BY o.order_date DESC, o.order_id 
+DESC FETCH FIRST 20 ROWS ONLY
+ 
+Plan hash value: 303069699
+ 
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation                               | Name                 | Starts | E-Rows | A-Rows |   A-Time   | Buffers |  OMem |  1Mem | Used-Mem |
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                        |                      |      1 |        |     18 |00:00:00.01 |      24 |       |       |          |
+|*  1 |  COUNT STOPKEY                          |                      |      1 |        |     18 |00:00:00.01 |      24 |       |       |          |
+|   2 |   VIEW                                  |                      |      1 |     20 |     18 |00:00:00.01 |      24 |       |       |          |
+|*  3 |    SORT ORDER BY STOPKEY                |                      |      1 |     20 |     18 |00:00:00.01 |      24 |  2048 |  2048 | 2048  (0)|
+|   4 |     NESTED LOOPS                        |                      |      1 |     20 |     18 |00:00:00.01 |      24 |       |       |          |
+|   5 |      TABLE ACCESS BY INDEX ROWID        | CUSTOMERS            |      1 |      1 |      1 |00:00:00.01 |       3 |       |       |          |
+|*  6 |       INDEX UNIQUE SCAN                 | UQ_CUSTOMERS_CODE    |      1 |      1 |      1 |00:00:00.01 |       2 |       |       |          |
+|   7 |      TABLE ACCESS BY INDEX ROWID BATCHED| ORDERS               |      1 |     20 |     18 |00:00:00.01 |      21 |       |       |          |
+|*  8 |       INDEX RANGE SCAN                  | IDX_ORDERS_CUST_DATE |      1 |     20 |     18 |00:00:00.01 |       3 |       |       |          |
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   1 - filter(ROWNUM<=20)
+   3 - filter(ROWNUM<=20)
+   6 - access("C"."CUSTOMER_CODE"=:CUSTOMER_CODE)
+   8 - access("O"."CUSTOMER_ID"="C"."CUSTOMER_ID")
+ 

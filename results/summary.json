@@ -1,0 +1,98 @@
+{
+  "generated_at": "2026-11-26T06:51:31+00:00",
+  "database": "Oracle AI Database 26ai Free Release 23.26.4.0.0 - Develop, Learn, and Run for Free\nVersion 23.26.4.0.0",
+  "client": "python-oracledb 26.2.0 (thin), Python 3.12.16",
+  "machine": "GitHub Actions ubuntu-latest runner, Oracle Database Free in a service container",
+  "data": {
+    "n_customers": 100000,
+    "n_orders": 2000000,
+    "n_skus": 50000,
+    "n_stg": 20000
+  },
+  "method": "median of repeated runs after one warm-up run (warm buffer cache); logical reads from V$MYSTAT 'session logical reads'",
+  "cases": {
+    "case1": {
+      "title": "Monthly sales report",
+      "unit": "per report",
+      "before": {
+        "elapsed_ms": 285.87,
+        "elapsed_ms_all": [
+          285.88,
+          285.87,
+          285.06,
+          296.35,
+          285.23
+        ],
+        "logical_reads": 11014
+      },
+      "after": {
+        "elapsed_ms": 24.63,
+        "elapsed_ms_all": [
+          25.23,
+          24.63,
+          24.87,
+          24.29,
+          24.63
+        ],
+        "logical_reads": 937
+      },
+      "identical_results": true
+    },
+    "case2": {
+      "title": "Customer order lookup (API call)",
+      "unit": "per lookup",
+      "lookups": 50,
+      "before": {
+        "elapsed_ms": 78.485,
+        "elapsed_ms_all": [
+          78.207,
+          78.763
+        ],
+        "logical_reads": 11014
+      },
+      "after": {
+        "elapsed_ms": 0.309,
+        "elapsed_ms_all": [
+          0.312,
+          0.307
+        ],
+        "logical_reads": 27
+      },
+      "identical_results": true
+    },
+    "case3": {
+      "title": "Bulk price upload",
+      "unit": "per file",
+      "file_lines": 20000,
+      "before": {
+        "elapsed_ms": 85868.68,
+        "logical_reads": 32913638,
+        "rows": 209088,
+        "price_sum": 105091995.25,
+        "duplicate_keys": 0
+      },
+      "after": {
+        "elapsed_ms": 91.35,
+        "logical_reads": 38556,
+        "rows": 209088,
+        "price_sum": 105091995.25,
+        "duplicate_keys": 0
+      },
+      "identical_results": true,
+      "double_submission": {
+        "before": {
+          "elapsed_ms": 119035.94,
+          "rows": 209095,
+          "price_sum": 105095933.32,
+          "duplicate_keys": 7
+        },
+        "after": {
+          "elapsed_ms": 333.66,
+          "rows": 209088,
+          "price_sum": 105091995.25,
+          "duplicate_keys": 0
+        }
+      }
+    }
+  }
+}

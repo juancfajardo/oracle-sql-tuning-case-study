@@ -1,0 +1,30 @@
+SQL_ID  38873v41s5sph, child number 0
+-------------------------------------
+SELECT /*+ gather_plan_statistics */ /* tag:case2 */        o.order_id, 
+       o.order_date,        o.status,        o.total_amount FROM 
+customers c JOIN orders o ON o.customer_id = c.customer_id WHERE 
+c.customer_code = :customer_code ORDER BY o.order_date DESC, o.order_id 
+DESC FETCH FIRST 20 ROWS ONLY
+ 
+Plan hash value: 3195682722
+ 
+--------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation               | Name      | Starts | E-Rows | A-Rows |   A-Time   | Buffers |  OMem |  1Mem | Used-Mem |
+--------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT        |           |      1 |        |     18 |00:00:00.07 |   11014 |       |       |          |
+|*  1 |  COUNT STOPKEY          |           |      1 |        |     18 |00:00:00.07 |   11014 |       |       |          |
+|   2 |   VIEW                  |           |      1 |     20 |     18 |00:00:00.07 |   11014 |       |       |          |
+|*  3 |    SORT ORDER BY STOPKEY|           |      1 |     20 |     18 |00:00:00.07 |   11014 |  2048 |  2048 | 2048  (0)|
+|*  4 |     HASH JOIN           |           |      1 |     20 |     18 |00:00:00.05 |   11014 |  2278K|  2278K|  726K (0)|
+|*  5 |      TABLE ACCESS FULL  | CUSTOMERS |      1 |      1 |      1 |00:00:00.01 |     644 |       |       |          |
+|   6 |      TABLE ACCESS FULL  | ORDERS    |      1 |   2000K|   2000K|00:00:00.05 |   10370 |       |       |          |
+--------------------------------------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   1 - filter(ROWNUM<=20)
+   3 - filter(ROWNUM<=20)
+   4 - access("O"."CUSTOMER_ID"="C"."CUSTOMER_ID")
+   5 - filter(TO_NUMBER("C"."CUSTOMER_CODE")=:CUSTOMER_CODE)
+ 

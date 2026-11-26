@@ -1,0 +1,32 @@
+SQL_ID  f90g2327cvtp9, child number 0
+-------------------------------------
+SELECT /*+ gather_plan_statistics */ /* tag:case1_after */        
+c.region_code,        COUNT(*)            AS orders_count,        
+SUM(o.total_amount) AS total_sales FROM orders o JOIN customers c ON 
+c.customer_id = o.customer_id WHERE o.order_date >= TO_DATE(:month || 
+'-01', 'YYYY-MM-DD')   AND o.order_date <  ADD_MONTHS(TO_DATE(:month || 
+'-01', 'YYYY-MM-DD'), 1)   AND o.status <> 'CANCELLED' GROUP BY 
+c.region_code ORDER BY c.region_code
+ 
+Plan hash value: 149485211
+ 
+-----------------------------------------------------------------------------------------------------------------------------------
+| Id  | Operation            | Name                  | Starts | E-Rows | A-Rows |   A-Time   | Buffers |  OMem |  1Mem | Used-Mem |
+-----------------------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT     |                       |      1 |        |     24 |00:00:00.02 |     937 |       |       |          |
+|   1 |  SORT GROUP BY       |                       |      1 |     24 |     24 |00:00:00.02 |     937 |  2048 |  2048 | 2048  (0)|
+|*  2 |   FILTER             |                       |      1 |        |  51948 |00:00:00.03 |     937 |       |       |          |
+|*  3 |    HASH JOIN         |                       |      1 |  36530 |  51948 |00:00:00.03 |     937 |  6558K|  2561K| 6939K (0)|
+|   4 |     TABLE ACCESS FULL| CUSTOMERS             |      1 |    100K|    100K|00:00:00.01 |     644 |       |       |          |
+|*  5 |     INDEX RANGE SCAN | IDX_ORDERS_DATE_COVER |      1 |  36530 |  51948 |00:00:00.01 |     293 |       |       |          |
+-----------------------------------------------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - filter(ADD_MONTHS(TO_DATE(:MONTH||'-01','YYYY-MM-DD'),1)>TO_DATE(:MONTH||'-01','YYYY-MM-DD'))
+   3 - access("C"."CUSTOMER_ID"="O"."CUSTOMER_ID")
+   5 - access("O"."ORDER_DATE">=TO_DATE(:MONTH||'-01','YYYY-MM-DD') AND 
+              "O"."ORDER_DATE"<ADD_MONTHS(TO_DATE(:MONTH||'-01','YYYY-MM-DD'),1))
+       filter("O"."STATUS"<>'CANCELLED')
+ 

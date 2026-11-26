@@ -1,0 +1,27 @@
+SQL_ID  8173ynxaxa42d, child number 0
+-------------------------------------
+SELECT /*+ gather_plan_statistics */ /* tag:case1_before */        
+c.region_code,        COUNT(*)            AS orders_count,        
+SUM(o.total_amount) AS total_sales FROM orders o JOIN customers c ON 
+c.customer_id = o.customer_id WHERE TO_CHAR(o.order_date, 'YYYY-MM') = 
+:month   AND o.status <> 'CANCELLED' GROUP BY c.region_code ORDER BY 
+c.region_code
+ 
+Plan hash value: 2832290968
+ 
+----------------------------------------------------------------------------------------------------------------------
+| Id  | Operation           | Name      | Starts | E-Rows | A-Rows |   A-Time   | Buffers |  OMem |  1Mem | Used-Mem |
+----------------------------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |           |      1 |        |     24 |00:00:00.28 |   11014 |       |       |          |
+|   1 |  SORT GROUP BY      |           |      1 |     24 |     24 |00:00:00.28 |   11014 |  2048 |  2048 | 2048  (0)|
+|*  2 |   HASH JOIN         |           |      1 |  13333 |  51948 |00:00:00.28 |   11014 |  4172K|  2474K| 5173K (0)|
+|*  3 |    TABLE ACCESS FULL| ORDERS    |      1 |  13333 |  51948 |00:00:00.25 |   10370 |       |       |          |
+|   4 |    TABLE ACCESS FULL| CUSTOMERS |      1 |    100K|    100K|00:00:00.01 |     644 |       |       |          |
+----------------------------------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - access("C"."CUSTOMER_ID"="O"."CUSTOMER_ID")
+   3 - filter(("O"."STATUS"<>'CANCELLED' AND TO_CHAR(INTERNAL_FUNCTION("O"."ORDER_DATE"),'YYYY-MM')=:MONTH))
+ 
